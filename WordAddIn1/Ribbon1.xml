@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+  <ribbon>
+    <tabs>
+      <tab idMso="TabReferences">
+        <group id="ContentGroup" label="OpenLaw NZ">
+          <button id="autoLinkCitationsButton" label="Auto Link Citations" onAction="OnAutoLinkCitations" />
+          <button id="relationshipsButton" label="Find Case Relationships Table" />
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>
+
