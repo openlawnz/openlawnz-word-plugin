@@ -179,7 +179,7 @@ namespace OpenLawNZ
 				{
 					Word.Range rng = footnote.Range.Duplicate;
 					rng.Start = rng.Start + m.Index;
-					rng.End = rng.Start + m.Index + m.Length;
+					rng.End = rng.Start + m.Value.Length;
 
 					footnoteMatches.Add(new DocumentCitation { range = rng, value = m.Value });
 
