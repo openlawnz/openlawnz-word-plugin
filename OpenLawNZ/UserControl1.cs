@@ -56,7 +56,7 @@ namespace OpenLawNZ
 			if (searchResult.hits.found > 0)
 			{
 				string caseID = searchResult.hits.hit[0].fields.case_id;
-				string DestinationPath;
+				
 
 				string apiResultString = await GraphQLQuery(new Dictionary<string, string>
 				{
@@ -65,42 +65,44 @@ namespace OpenLawNZ
 
 				JObject apiResult = JObject.Parse(apiResultString);
 				string fileName = (string)apiResult["data"]["case"]["bucket_key"];
-				DestinationPath = Directory.GetParent(Globals.ThisAddIn.Application.ActiveDocument.FullName).FullName;
-
+				string FilePath = Directory.GetParent(Globals.ThisAddIn.Application.ActiveDocument.FullName).FullName;
+				string RelativePath;
 				if (courtOfAppeal)
 				{
 					if (appelant)
 					{
-						DestinationPath = DestinationPath + "\\Auth\\App Auth";
+						RelativePath = "Auth\\App Auth";
 						
 					}
 					else
 					{
-						DestinationPath = DestinationPath + "\\Auth\\Resp Auth";
+						RelativePath = "Auth\\Resp Auth";
 						
 					}
 					
 				} else
 				{
-					DestinationPath = DestinationPath + "\\References";
+					RelativePath = "References";
 				}
 
-				System.IO.Directory.CreateDirectory(DestinationPath);
-				DestinationPath = DestinationPath + "\\" + fileName;
+				string absolutePath = FilePath + "\\" + RelativePath;
+				string absoluteFilePath = absolutePath + "\\" + fileName;
+				
+				System.IO.Directory.CreateDirectory(absolutePath);
 
-				if (!File.Exists(DestinationPath))
+				if (!File.Exists(absoluteFilePath))
 					{
 						string URL = $"https://s3-ap-southeast-2.amazonaws.com/freelaw-pdfs/{fileName}";
 						System.Net.WebClient Client = new WebClient();
-						Client.DownloadFile(URL, DestinationPath);
+						Client.DownloadFile(URL, absoluteFilePath);
 					}
 
-				gridItem.url = DestinationPath;
+				gridItem.url = RelativePath + "\\" + fileName;
 				gridItem.status = "Linked";
 
 				gridItem.ranges.ForEach(range =>
 				{
-					range.Hyperlinks.Add(range, DestinationPath, LinkRef);
+					range.Hyperlinks.Add(range, gridItem.url, LinkRef);
 				});
 				
 
@@ -287,7 +289,7 @@ namespace OpenLawNZ
 
 			string comboBoxValue = (string)folderStructureComboBox.SelectedItem;
 			bool isCourtOfAppeal = !String.IsNullOrEmpty(comboBoxValue);
-			bool isAppelant = isCourtOfAppeal && comboBoxValue.Contains("Appelant");
+			bool isAppelant = isCourtOfAppeal && comboBoxValue.Contains("Appellant");
 
 			gridItems.ForEach(gridItem =>
 			{

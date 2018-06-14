@@ -117,7 +117,7 @@
 			// 
 			this.folderStructureComboBox.FormattingEnabled = true;
 			this.folderStructureComboBox.Items.AddRange(new object[] {
-            "Court of Appeal Appelant",
+            "Court of Appeal Appellant",
             "Court of Appeal Respondent"});
 			this.folderStructureComboBox.Location = new System.Drawing.Point(7, 84);
 			this.folderStructureComboBox.Name = "folderStructureComboBox";
