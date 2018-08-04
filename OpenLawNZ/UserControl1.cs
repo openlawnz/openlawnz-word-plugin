@@ -23,7 +23,6 @@ using Microsoft.Office.Core;
 namespace OpenLawNZ
 {
 
-
 	public partial class UserControl1 : UserControl
 	{
 
@@ -39,32 +38,18 @@ namespace OpenLawNZ
 			return await response.Content.ReadAsStringAsync();
 		}
 
-		async private Task<String> SearchQuery(string value)
-		{
-			return await client.GetStringAsync("https://search.openlaw.nz?q=" + value);
-		}
-
-		async private Task<CitationSearchResult> SearchCitation(string citation)
-		{
-			string searchResultString = await SearchQuery(citation);
-			return JsonConvert.DeserializeObject<CitationSearchResult>(searchResultString);
-		}
-
 		async private System.Threading.Tasks.Task ProcessLocalCitation(ResultDataGridItem gridItem, bool courtOfAppeal = false, bool appelant = false)
 		{
-			CitationSearchResult searchResult = await SearchCitation(gridItem.citation);
-			if (searchResult.hits.found > 0)
+			
+			string apiResultString = await GraphQLQuery(new Dictionary<string, string>
 			{
-				string caseID = searchResult.hits.hit[0].fields.case_id;
-				
+				{ "query","{ citation(citation: \"'" + gridItem.citation + "'\") { case { PDF { bucket_key } } } }" }
+			});
 
-				string apiResultString = await GraphQLQuery(new Dictionary<string, string>
-				{
-					{ "query","{case(id: " + caseID + ") {bucket_key}}" }
-				});
-
-				JObject apiResult = JObject.Parse(apiResultString);
-				string fileName = (string)apiResult["data"]["case"]["bucket_key"];
+			JObject apiResult = JObject.Parse(apiResultString);
+			if (apiResult["data"]["citation"].HasValues)
+			{
+				string fileName = (string)apiResult["data"]["citation"]["case"]["PDF"]["bucket_key"];
 				string FilePath = Directory.GetParent(Globals.ThisAddIn.Application.ActiveDocument.FullName).FullName;
 				string RelativePath;
 				if (courtOfAppeal)
@@ -92,7 +77,7 @@ namespace OpenLawNZ
 
 				if (!File.Exists(absoluteFilePath))
 					{
-						string URL = $"https://s3-ap-southeast-2.amazonaws.com/freelaw-pdfs/{fileName}";
+						string URL = $"https://s3-ap-southeast-2.amazonaws.com/openlaw-pdfs/{fileName}";
 						System.Net.WebClient Client = new WebClient();
 						Client.DownloadFile(URL, absoluteFilePath);
 					}
@@ -104,20 +89,27 @@ namespace OpenLawNZ
 				{
 					range.Hyperlinks.Add(range, gridItem.url, LinkRef);
 				});
-				
 
+			} else
+			{
+				gridItem.status = "Not found";
 			}
 		}
 
 		async private System.Threading.Tasks.Task ProcessRemoteCitation(ResultDataGridItem gridItem)
 		{
 
-			CitationSearchResult searchResult = await SearchCitation(gridItem.citation);
-
-			if (searchResult.hits.found > 0)
+			string apiResultString = await GraphQLQuery(new Dictionary<string, string>
 			{
+				{ "query","{ citation(citation: \"'" + gridItem.citation + "'\") { case { id } } }" }
+			});
 
-				string caseID = searchResult.hits.hit[0].fields.case_id;
+			JObject apiResult = JObject.Parse(apiResultString);
+			
+			if (apiResult["data"]["citation"].HasValues)
+			{
+				string caseID = (string)apiResult["data"]["citation"]["case"]["id"];
+
 				string DestinationPath;
 
 				DestinationPath = "https://www.openlaw.nz/case/" + caseID;
@@ -338,28 +330,11 @@ namespace OpenLawNZ
 
 	// Must appear under UserControl1 class
 	// https://developercommunity.visualstudio.com/content/problem/44160/open-form-designer-from-solution-explorer.html
-	internal class CitationSearchResultHits
-	{
-		public int found { get; set; }
-		public int start { get; set; }
-		public List<CitationSearchResultHit> hit { get; set; }
-	}
-	internal class CitationSearchResultHit
-	{
-		public string id { get; set; }
-		public CitationDataFields fields { get; set; }
-	}
-
+	
 	internal class CitationDataFields
 	{
 		public string case_id { get; set; }
 		public string citation { get; set; }
-	}
-
-	internal class CitationSearchResult
-	{
-		public dynamic status { get; set; }
-		public CitationSearchResultHits hits { get; set; }
 	}
 
 	internal class DocumentCitation
