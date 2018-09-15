@@ -1,44 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
-using Word = Microsoft.Office.Interop.Word;
-using Office = Microsoft.Office.Core;
-using Microsoft.Office.Tools.Word;
+﻿using Office = Microsoft.Office.Core;
 using System.IO;
+using System.Collections.Generic;
+using Microsoft.Office.Tools;
+using Microsoft.Office.Interop.Word;
 
 namespace OpenLawNZ
 {
    
     public partial class ThisAddIn
     {
-        private UserControl1 myUserControl1;
-        private Microsoft.Office.Tools.CustomTaskPane myCustomTaskPane;
-
-        // https://stackoverflow.com/questions/43213777/custom-ribbon-xml-tab-not-showing-in-word-vsto-add-in?rq=1
-        protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
-        {
-            return new Ribbon1();
-        }
+		private Dictionary<int, CustomTaskPane> taskPanes = new Dictionary<int, CustomTaskPane>();
 
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
+			string solutionPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
+			
+		}
+		
 
-            myUserControl1 = new UserControl1();
-            myCustomTaskPane = this.CustomTaskPanes.Add(myUserControl1, "OpenLaw NZ");
-            myCustomTaskPane.Visible = false;
-            myCustomTaskPane.DockPosition =
-            Office.MsoCTPDockPosition.msoCTPDockPositionRight;
-            myCustomTaskPane.Width = 450;
 
-#if DEBUG
-            string solutionPath = Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory()));
-            this.Application.Documents.Open(solutionPath + @"\TestFiles\Test.docx");
-#endif
-        }
+		public CustomTaskPane ActivePane
+		{
+			get
+			{
+				if (!taskPanes.ContainsKey(Application.ActiveWindow.Hwnd))
+				{
+					UserControl1 taskPaneControl = new UserControl1();
+					CustomTaskPane taskPanel = CustomTaskPanes.Add(taskPaneControl, "OpenLaw NZ", Application.ActiveWindow);
+					taskPanel.DockPosition = Office.MsoCTPDockPosition.msoCTPDockPositionRight;
+					taskPanel.Width = 420;
+					taskPanes[Application.ActiveWindow.Hwnd] = taskPanel;
+				}
+				return taskPanes[Application.ActiveWindow.Hwnd];
+			}
+		}
 
-        private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
+		private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
         {
         }
 

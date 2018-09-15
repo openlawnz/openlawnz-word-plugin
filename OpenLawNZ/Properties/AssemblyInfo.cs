@@ -9,9 +9,9 @@ using System.Security;
 [assembly: AssemblyTitle("OpenLawNZ")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("OpenLaw NZ")]
 [assembly: AssemblyProduct("OpenLawNZ")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Copyright © 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -133,7 +133,7 @@ namespace OpenLawNZ
 
 		public MatchCollection matchRegex(string text)
 		{
-			return Regex.Matches(text, @"((?:\[\d{4}\]\s*)(?:(NZDC|NZFC|NZHC|NZCA|NZSC|NZEnvC|NZEmpC|NZACA|NZBSA|NZCC|NZCOP|NZCAA|NZDRT|NZHRRT|NZIACDT|NZIPT|NZIEAA|NZLVT|NZLCDT|NZLAT|NZSHD|NZLLA|NZMVDT|NZPSPLA|NZREADT|NZSSAA|NZSAAA|NZTRA))(?:\s*(\w{1,6})))");
+			return Regex.Matches(text, @"(\[|\()\d{4}(\]|\))[\s\S](\d{0,3}[\s\S])\w{1,5}[\s\S]\d{1,5}(([\s\S]\(\w*\))?)");
 		}
 
 		private DocumentCitation makeCitationFromMatch(Match m)
