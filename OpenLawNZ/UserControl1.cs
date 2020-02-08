@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 using Office = Microsoft.Office.Core;
 using Word = Microsoft.Office.Interop.Word;
 using System.Net;
-using System.Net.Http;
+using System.Net.Http; 
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Microsoft.Office.Interop.Word;
@@ -43,14 +43,14 @@ namespace OpenLawNZ
 			
 			string apiResultString = await GraphQLQuery(new Dictionary<string, string>
 			{
-				{ "query","{ citation(citation: \"'" + gridItem.citation + "'\") { case { PDF { bucket_key } } } }" }
-			});
+                 { "query","{ caseCitations(condition:{citation: \"" + gridItem.citation + "\"}) { case { pdf { pdfDbKey } } } }" } 
+            });
 
 			JObject apiResult = JObject.Parse(apiResultString);
-			if (apiResult["data"]["citation"].HasValues)
+			if (apiResult["data"]["caseCitations"].HasValues)
 			{
-				string fileName = (string)apiResult["data"]["citation"]["case"]["PDF"]["bucket_key"];
-				string FilePath = Directory.GetParent(Globals.ThisAddIn.Application.ActiveDocument.FullName).FullName;
+                string fileName = (string)apiResult["data"]["caseCitations"][0]["case"]["pdf"]["pdfDbKey"];
+                string FilePath = Directory.GetParent(Globals.ThisAddIn.Application.ActiveDocument.FullName).FullName;
 				string RelativePath;
 				if (courtOfAppeal)
 				{
@@ -77,8 +77,8 @@ namespace OpenLawNZ
 
 				if (!File.Exists(absoluteFilePath))
 					{
-						string URL = $"https://s3-ap-southeast-2.amazonaws.com/openlaw-pdfs/{fileName}";
-						System.Net.WebClient Client = new WebClient();
+                    string URL = $"https://s3-ap-southeast-2.amazonaws.com/openlawnz-pdfs/{fileName}";
+                    System.Net.WebClient Client = new WebClient();
 						Client.DownloadFile(URL, absoluteFilePath);
 					}
 
@@ -101,14 +101,14 @@ namespace OpenLawNZ
 
 			string apiResultString = await GraphQLQuery(new Dictionary<string, string>
 			{
-				{ "query","{ citation(citation: \"'" + gridItem.citation + "'\") { case { id } } }" }
-			});
+                { "query","{ caseCitations(condition:{citation: \"" + gridItem.citation + "\"}) { case { id } } }" }
+            });
 
 			JObject apiResult = JObject.Parse(apiResultString);
 			
-			if (apiResult["data"]["citation"].HasValues)
+			if (apiResult["data"]["caseCitations"].HasValues)
 			{
-				string caseID = (string)apiResult["data"]["citation"]["case"]["id"];
+                string caseID = (string)apiResult["data"]["caseCitations"][0]["case"]["id"];
 
 				string DestinationPath;
 
